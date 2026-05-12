@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useContext, useEffect, useReducer, ReactNode } from 'react';
 import { setAccessToken } from '@/lib/api/client';
 
 interface AuthContextValue {
@@ -10,33 +10,51 @@ interface AuthContextValue {
   logout: () => void;
 }
 
+type State = { isAuthenticated: boolean; isLoading: boolean };
+type Action =
+  | { type: 'INIT'; authenticated: boolean }
+  | { type: 'LOGIN' }
+  | { type: 'LOGOUT' };
+
+function reducer(_state: State, action: Action): State {
+  switch (action.type) {
+    case 'INIT':
+      return { isAuthenticated: action.authenticated, isLoading: false };
+    case 'LOGIN':
+      return { isAuthenticated: true, isLoading: false };
+    case 'LOGOUT':
+      return { isAuthenticated: false, isLoading: false };
+  }
+}
+
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [{ isAuthenticated, isLoading }, dispatch] = useReducer(reducer, {
+    isAuthenticated: false,
+    isLoading: true,
+  });
 
   useEffect(() => {
     const token = localStorage.getItem('accessToken');
     if (token) {
       setAccessToken(token);
-      setIsAuthenticated(true);
     }
-    setIsLoading(false);
+    dispatch({ type: 'INIT', authenticated: !!token });
   }, []);
 
   function login(accessToken: string, refreshToken: string) {
     setAccessToken(accessToken);
     localStorage.setItem('accessToken', accessToken);
     localStorage.setItem('refreshToken', refreshToken);
-    setIsAuthenticated(true);
+    dispatch({ type: 'LOGIN' });
   }
 
   function logout() {
     setAccessToken(null);
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
-    setIsAuthenticated(false);
+    dispatch({ type: 'LOGOUT' });
   }
 
   return (
