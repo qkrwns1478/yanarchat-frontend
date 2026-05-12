@@ -9,3 +9,4 @@
 ### 요구사항
 
 - 이모지 사용을 지양하고, lucide-icon 또는 react-icon 사용을 지향할 것.
+- 구현 완료 후 `npm run lint`와 `npm run build`를 실행할 것.
