@@ -57,6 +57,7 @@ export const conversationApi = {
   async *sendMessage(conversationId: string, content: string): AsyncGenerator<string> {
     const res = await apiFetch(`/api/conversations/${conversationId}/messages`, {
       method: 'POST',
+      headers: { Accept: 'text/event-stream' },
       body: JSON.stringify({ content }),
     });
 
@@ -78,16 +79,16 @@ export const conversationApi = {
         buffer = lines.pop() ?? '';
 
         for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            const data = line.slice(6).trim();
+          if (line.startsWith('data:')) {
+            const data = line.slice(5).trim();
             if (data === '[DONE]') return;
             if (data) yield data;
           }
         }
       }
 
-      if (buffer.startsWith('data: ')) {
-        const data = buffer.slice(6).trim();
+      if (buffer.startsWith('data:')) {
+        const data = buffer.slice(5).trim();
         if (data && data !== '[DONE]') yield data;
       }
     } finally {

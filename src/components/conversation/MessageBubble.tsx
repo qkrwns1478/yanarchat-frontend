@@ -6,7 +6,7 @@ interface MessageBubbleProps {
 }
 
 export default function MessageBubble({ message, characterName }: MessageBubbleProps) {
-  const isUser = message.role === 'user';
+  const isUser = message.role.toLowerCase() === 'user';
 
   return (
     <div className={`flex gap-3 ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
